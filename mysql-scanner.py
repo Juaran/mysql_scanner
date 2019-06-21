@@ -125,8 +125,8 @@ class MysqlScanner(object):
 
 if __name__ == '__main__':
 
-    ipcmd = ""
-    port = 6789
+    ipcmd = "ip.txt"
+    port = 3306
     usercmd = "user.txt"
     passcmd = "pass.txt"
 
