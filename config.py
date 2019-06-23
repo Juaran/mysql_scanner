@@ -6,10 +6,9 @@ port = 3306
 usercmd = "dic_username_mysql.txt"
 passcmd = "dic_password_mysql.txt"
 
-thread = 12
-timeout = 1.0
-savefile = "result.txt"
-printall = 1
+THREAD = 20
+TIMEOUT = 1.0
+PRINTALL = 1
 
 
 """ 数据库设置 """
