@@ -1,5 +1,6 @@
 
 """
+    0. 请在末尾设置参数
     1. 读取用户名
     2. 读取密码
     3. 读取主机
@@ -204,10 +205,10 @@ if __name__ == "__main__":
 
     # 本地数据库信息
     save_mysql = {
-        'host': "119.3.55.220",
+        'host': "119.3.55.xxx",
         'port': 3306,
-        'user': "root",
-        'password': "huaweiyun1980/.,",
+        'user': "xxx",
+        'password': "xxx",
         'db': 'mysql_scan',  # 数据库名
         'tb': 'mysql_info'  # 表名
     }
