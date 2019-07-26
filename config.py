@@ -14,10 +14,10 @@ PRINTALL = 1
 """ 数据库设置 """
 
 # ----- 1 主机连接信息
-HOST      = "119.3.55.220"
-PORT      = 6789
-USER      = "4287e7ae11008807e536c6283f82ea2f"
-PASSWORD  = "2tU4yyHkwu"
+HOST      = "119.3.55.xxx"
+PORT      = xxx
+USER      = "xxx"
+PASSWORD  = "xxx"
 
 # ----- 2 数据库和表
 DATABASE  = "mysqlscan"       # 读取数据库
